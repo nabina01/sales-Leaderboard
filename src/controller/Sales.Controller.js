@@ -8,7 +8,7 @@ const prisma = new PrismaClient({ adapter })
 
 // Add sales record
 exports.addSale = async (req, res) => {
-  const { agentName, amount } = req.body
+  const { agentName, amount, saleDate } = req.body
 
   if (!agentName || !amount) {
     return res.status(400).json({
@@ -21,7 +21,8 @@ exports.addSale = async (req, res) => {
     const sale = await prisma.sale.create({
       data: {
         agentName,
-        amount: Number(amount)
+        amount: Number(amount),
+        createdAt: saleDate ? new Date(saleDate) : new Date()
       }
     })
 
@@ -41,8 +42,26 @@ exports.addSale = async (req, res) => {
 // Get leaderboard
 exports.getLeaderboard = async (req, res) => {
   try {
+    const { date } = req.query
+    
+    // Build filter for date if provided
+    const whereClause = {}
+    if (date) {
+      const startDate = new Date(date)
+      startDate.setHours(0, 0, 0, 0)
+      
+      const endDate = new Date(date)
+      endDate.setHours(23, 59, 59, 999)
+      
+      whereClause.createdAt = {
+        gte: startDate,
+        lte: endDate
+      }
+    }
+
     const aggregated = await prisma.sale.groupBy({
       by: ["agentName"],
+      where: whereClause,
       _sum: {
         amount: true
       },
@@ -78,7 +97,7 @@ exports.getLeaderboard = async (req, res) => {
     })
 
     res.json({
-      date: new Date().toISOString().split("T")[0],
+      date: date || new Date().toISOString().split("T")[0],
       leaderboard
     })
   } catch (error) {

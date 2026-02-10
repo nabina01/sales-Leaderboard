@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node main.js",
     "dev": "node --watch main.js",
+    "build": "npx prisma generate",
     "test": "node --test"
   },
   "dependencies": {
