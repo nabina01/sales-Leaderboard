@@ -43,8 +43,6 @@ exports.addSale = async (req, res) => {
 exports.getLeaderboard = async (req, res) => {
   try {
     const { date } = req.query
-    
-    // Build filter for date if provided
     const whereClause = {}
     if (date) {
       const startDate = new Date(date)
@@ -74,8 +72,6 @@ exports.getLeaderboard = async (req, res) => {
         }
       }
     })
-
-    // Ranking with tie handling
     let rank = 0
     let prevSales = null
 
